@@ -1,0 +1,5 @@
+#!/bin/sh
+
+[ ! -f /tmp/startup.lock ] && sleep 10 && exit 0;
+
+exec /usr/local/bin/ocp 

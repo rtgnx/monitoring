@@ -1,0 +1,5 @@
+#!/bin/sh
+
+[ ! -f /tmp/startup.lock ] && sleep 10 && exit 0;
+
+exec /bin/loki -config.file=/etc/loki/loki.yml

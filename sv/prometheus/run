@@ -1,0 +1,23 @@
+#!/bin/sh
+
+[ ! -f /tmp/startup.lock ] && sleep 10 && exit 0;
+
+[ -f ./conf ] && . ./conf
+
+: ${WRKDIR:=/var/lib/prometheus}
+
+export CONFIG_DIR="/etc/prometheus"
+export CONFIG_FILE="/etc/prometheus/prometheus.yml"
+
+[ ! -d "$WRKDIR" ] && mkdir -p $WRKDIR
+
+cd "${WRKDIR}"
+
+if ! id "_prometheus" &>/dev/null; then
+  useradd -r _prometheus
+fi
+
+chown -R _prometheus $WRKDIR
+chown -R _prometheus $CONFIG_DIR
+
+exec chpst -o 8192 -u _prometheus prometheus --config.file=$CONFIG_FILE $ARGS 2>&1

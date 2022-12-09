@@ -1,0 +1,31 @@
+#!/bin/sh
+
+[ -f /tmp/startup.lock ] && sleep 600 && exit 0;
+
+# enable tailscale service
+ln -sf /etc/sv/tailscaled /var/service/
+
+sleep 10;
+
+tailscale up --ssh --auth-key "$TS_KEY" --hostname "$TS_HOSTNAME"
+
+# fetch tls certificate
+[ ! -d "/etc/tls" ] && mkdir -p /etc/tls
+cd /etc/tls && tailscale cert "${TS_HOSTNAME}.${TAILNET}"
+
+
+# compile templates
+
+for tpl in $(find "/" -type f -name '*.tpl*' 2> /dev/null); do
+  dst="$(echo "$tpl" | sed 's/.tpl//')"
+  envsubst < $tpl > $dst
+done
+
+# enable services
+#
+ln -sf /etc/sv/loki /var/service/
+ln -sf /etc/sv/prometheus /var/service/
+ln -sf /etc/sv/ping_exporter /var/service/
+ln -sf /etc/sv/ocp /var/service/
+
+touch /tmp/startup.lock

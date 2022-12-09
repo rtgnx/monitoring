@@ -1,0 +1,19 @@
+#!/bin/sh
+
+[ -r conf ] && . ./conf
+DATA_DIR="/var/lib/tailscale"
+RUNTIME="/var/run/tailscale"
+
+[ ! -d "$DATA_DIR" ] && mkdir -p $DATA_DIR
+[ ! -d "$RUNTIME" ] && mkdir -p $RUNTIME
+
+exec 2>&1
+
+if [ ! -n "$CONTAINER_ID" ]; then
+  # start userland
+  exec tailscaled \
+    --state=$DATA_DIR/tailscaled.state \
+    --socket=$RUNTIME/tailscaled.sock \
+    --port "${PORT:-41641}" --tun userspace-networking \
+    "$@"
+fi

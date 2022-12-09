@@ -1,0 +1,6 @@
+#!/bin/sh
+
+[ ! -f /tmp/startup.lock ] && sleep 10 && exit 0;
+
+NODES="$(tailscale status 2> /dev/null | sed 's/#.*//' | cut -d' ' -f1 | tr '\n' ' ')"
+exec ping_exporter $NODES
